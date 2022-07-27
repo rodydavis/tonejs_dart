@@ -21,7 +21,7 @@ jobs:
           flutter config --enable-web
           flutter pub get
       - name: Build
-        run: cd example && flutter build web --base-href="/tonejs_dart/"
+        run: cd example && flutter build web --base-href="/tonejs_dart/" --profile
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
