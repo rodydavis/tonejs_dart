@@ -1,14 +1,15 @@
+@JS('Tone')
 library tonejs_dart;
 
 import 'package:js/js.dart';
 
-export 'src/synth.dart';
+part 'src/synth.dart';
+part 'src/transport.dart';
 
-@JS('Tone')
-class Tone {
-  @JS('now')
-  external static num now();
+external num now();
 
-  @JS('start')
-  external static Future<void> start();
-}
+external Future<void> start();
+
+external Future<void> stop();
+
+external Future<void> loaded();

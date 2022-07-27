@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:piano/piano.dart';
-import 'package:tonejs_dart/tonejs_dart.dart';
+import 'package:tonejs_dart/tonejs_dart.dart' as Tone;
 
 void main() {
   runApp(const MyApp());
@@ -28,18 +28,59 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final synth = ToneSynth().toDestination();
-
-  @override
-  void initState() {
-    Tone.start();
-    super.initState();
-  }
+  bool started = false;
+  final synths = <Tone.Synth>[
+    Tone.Synth(),
+    Tone.PolySynth(),
+    Tone.FMSynth(),
+    Tone.AMSynth(),
+  ];
+  int idx = 0;
+  late Tone.Synth synth = synths[idx].toDestination();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tone.js')),
+      appBar: AppBar(
+        title: const Text('Tone.js'),
+        actions: [
+          // Pop menu button for synths
+          DropdownButton<int>(
+            value: idx,
+            onChanged: (value) {
+              if (value == null) {
+                return;
+              }
+              setState(() {
+                idx = value;
+                synth = synths[idx].toDestination();
+              });
+            },
+            items: const [
+              DropdownMenuItem<int>(
+                value: 0,
+                child: Text('Mono Synth'),
+              ),
+              DropdownMenuItem<int>(
+                value: 1,
+                child: Text('Poly Synth'),
+              ),
+              DropdownMenuItem<int>(
+                value: 2,
+                child: Text('FM Synth'),
+              ),
+              DropdownMenuItem<int>(
+                value: 3,
+                child: Text('AM Synth'),
+              ),
+              DropdownMenuItem<int>(
+                value: 4,
+                child: Text('Noise Synth'),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: InteractivePiano(
         highlightedNotes: [NotePosition(note: Note.C, octave: 3)],
         naturalColor: Colors.white,
@@ -49,7 +90,10 @@ class _MyHomePageState extends State<MyHomePage> {
           Clef.Treble,
         ]),
         onNotePositionTapped: (position) async {
-          // Use an audio library like flutter_midi to play the sound
+          if (!started) {
+            await Tone.start();
+            started = true;
+          }
           final noteName = position.name.replaceAll('♯', '#');
           synth.triggerAttackRelease(noteName, '8n');
         },

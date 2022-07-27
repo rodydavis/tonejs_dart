@@ -1,39 +1,112 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# Tone.js Dart
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+Tone.js api for Flutter web
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
-
-## Features
-
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+## Example
 
 ```dart
-const like = 'sample';
+import 'package:flutter/material.dart';
+import 'package:piano/piano.dart';
+import 'package:tonejs_dart/tonejs_dart.dart' as Tone;
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Tone.js',
+      theme: ThemeData.dark(),
+      home: const MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  bool started = false;
+  final synths = <Tone.Synth>[
+    Tone.Synth(),
+    Tone.PolySynth(),
+    Tone.FMSynth(),
+    Tone.AMSynth(),
+  ];
+  int idx = 0;
+  late Tone.Synth synth = synths[idx].toDestination();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Tone.js'),
+        actions: [
+          // Pop menu button for synths
+          DropdownButton<int>(
+            value: idx,
+            onChanged: (value) {
+              if (value == null) {
+                return;
+              }
+              setState(() {
+                idx = value;
+                synth = synths[idx].toDestination();
+              });
+            },
+            items: const [
+              DropdownMenuItem<int>(
+                value: 0,
+                child: Text('Mono Synth'),
+              ),
+              DropdownMenuItem<int>(
+                value: 1,
+                child: Text('Poly Synth'),
+              ),
+              DropdownMenuItem<int>(
+                value: 2,
+                child: Text('FM Synth'),
+              ),
+              DropdownMenuItem<int>(
+                value: 3,
+                child: Text('AM Synth'),
+              ),
+              DropdownMenuItem<int>(
+                value: 4,
+                child: Text('Noise Synth'),
+              ),
+            ],
+          ),
+        ],
+      ),
+      body: InteractivePiano(
+        highlightedNotes: [NotePosition(note: Note.C, octave: 3)],
+        naturalColor: Colors.white,
+        accidentalColor: Colors.black,
+        keyWidth: 60,
+        noteRange: NoteRange.forClefs([
+          Clef.Treble,
+        ]),
+        onNotePositionTapped: (position) async {
+          if (!started) {
+            await Tone.start();
+            started = true;
+          }
+          final noteName = position.name.replaceAll('♯', '#');
+          synth.triggerAttackRelease(noteName, '8n');
+        },
+      ),
+    );
+  }
+}
+
 ```
-
-## Additional information
-
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
